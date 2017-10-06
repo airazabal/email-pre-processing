@@ -30,9 +30,9 @@ def Pre_Process_Email():
     request_data_object['source_email'] = json.loads(request.data)['source_email'].encode('utf-8')
     request_data_object['source_id'] = json.loads(request.data)['source_id'].encode('utf-8')
     print(request_data_object['source_email'])
-    print(type(request_data_object['source_email'].encode('utf-8')))
     print(request_data_object['source_id'])
     print(type(request_data_object['source_id']))
+    print(type(request_data_object['source_email']))
     response = {}
     response['source_id'] = request_data_object['source_id']
     response['body'] = request_data_object['source_email']
@@ -61,6 +61,6 @@ def SayHello(name):
     }
     return jsonify(results=message)
 
-port = os.getenv('PORT', '5000')
+port = os.getenv('PORT', '7000')
 if __name__ == "__main__":
 	app.run(host='0.0.0.0', port=int(port))

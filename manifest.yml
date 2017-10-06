@@ -3,7 +3,7 @@ applications:
   memory: 128M
   instances: 1
   domain: mybluemix.net
-  name: email-thread-microservice
-  host: email-thread-microservice
+  name: email-pre-processing-service
+  host: email-pre-processing-service
   disk_quota: 1024M
   buildpack: python_buildpack
