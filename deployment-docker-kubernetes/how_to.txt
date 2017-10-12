@@ -1,0 +1,105 @@
+
+commands appear with no preceding lines
+## lines are comments
+—> lines are action
+
+##Dependencies:
+##Enable Virtualization
+##Docker version : Docker version 17.09.0-ce, build afdb6d4
+##Bluemix CLI: https://clis.ng.bluemix.net/ui/home.html bx version 0.6.1+724c406b-2017-10-09T03:12:39+00:00
+##bx plugin install container-service -r Bluemix
+##bx plugin install container-registry -r Bluemix
+##Kubernetes CLI
+##kubectl version
+##Client Version: version.Info{Major:"1", Minor:"7", GitVersion:"v1.7.5", GitCommit:"17d7182a7ccbb167074be7a87f0a68bd00d58d97", GitTreeState:"clean", BuildDate:"2017-08-31T09:14:02Z", ##GoVersion:"go1.8.3", Compiler:"gc", Platform:"darwin/amd64"}
+##Server Version: version.Info{Major:"1", Minor:"7+", GitVersion:"v1.7.4-1+2967235b764341", GitCommit:"2967235b764341d021f18072c2e628abe6c956c7", GitTreeState:"clean", ##BuildDate:"2017-09-18T08:10:21Z", GoVersion:"go1.8.3", Compiler:"gc", Platform:"linux/amd64"}
+
+## (Starting point: email-pre-processing-service repository)
+
+## Build and tag a docker container
+
+docker build -t registry.ng.bluemix.net/hig_smart_email/email-pre-processing-service:0.0.2 .
+
+## run it, map localhost:7000 to docker port 7000, so you can verify the image built properly
+
+docker run -p 7000:7000 -d registry.ng.bluemix.net/hig_smart_email/email-pre-processing-service:0.0.2
+
+--> visit localhost:7000
+
+## test the microservice using python 2.7
+
+python test_microservice.py
+
+## now push the container to the registry, because we are happy with it
+## login and target your org/space
+
+bx login -sso
+bx target bx target -o "Smart Email" -s SmartEmailDev
+
+## log into the container registry (bx cr) and verify that hig_smart_email is there
+## make sure you see the namespace hig_smart_email
+
+bx cr login
+bx cr namespaces
+
+## push the image
+
+docker push registry.ng.bluemix.net/hig_smart_email/email-pre-processing-service:0.0.2
+
+
+## verify the image pushed in the web portal
+—> Visit the Container Registry
+—> console.bluemix.net -> Containers -> Registry -> Private Repositories
+—> Click your image -> Verify that you can see it
+
+## Now it's time to deploy to kubernetes:
+
+## check out your cluster
+bx cs clusters
+
+## run the following command to get the kubectl config information you need
+
+bx cs cluster-config <cluster name>
+
+## paste the output from that command (export KUBECONFIG=….)
+## verify it worked by setting up the proxy and visiting the kubernetes dashboard
+
+kubectl proxy
+—-> Visit the site: http://127.0.0.1:8001/ui
+
+## check out your current deployments, services, etc
+
+kubectl get deployments
+kubectl get services
+
+## if you want to “ssh” into a pod so you can run commands locally
+kubectl get pods
+--> get a pod name
+kubectl exec -it email-pre-processing-service-deployment-1194143854-trwf8 -- /bin/sh
+
+## first, create the deployment. this is a declaration of how to create and maintain pods
+kubectl create -f message-classifier-deployment.yaml
+kubectl get deployments
+
+## then, expose this (using NodePort for now)
+
+kubectl create -f deployment-docker-kubernetes/email-pre-processing-service-service.yaml
+kubectl get services
+kubectl describe service email-pre-processing-service-service
+
+## Now, everything is deployed and exposed. Let’s go find out where
+
+bx cs workers <cluster-name>
+
+## output looks like this, take the public IP
+ID                                                 Public IP      Private IP    Machine Type   State    Status   Version
+kube-hou02-pac3f720699fc146009a827def6118ec19-w1   184.173.5.55   10.47.79.56   free           normal   Ready    1.7.4_1502*
+
+--> Note down the public IP of a worker NODE (which is the Node in NodePort)
+
+kubectl describe service email-pre-processing-service-service
+
+--> Get the port from the NodePort line: “NodePort:		<unset>	30705/TCP”
+—> 30705 is the Node Port
+
+--> Visit 184.173.5.55:30705 and view your app
