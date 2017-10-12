@@ -97,6 +97,7 @@ kube-hou02-pac3f720699fc146009a827def6118ec19-w1   184.173.5.55   10.47.79.56   
 
 --> Note down the public IP of a worker NODE (which is the Node in NodePort)
 
+## get the port number you need
 kubectl describe service email-pre-processing-service-service
 
 --> Get the port from the NodePort line: “NodePort:		<unset>	30705/TCP”
