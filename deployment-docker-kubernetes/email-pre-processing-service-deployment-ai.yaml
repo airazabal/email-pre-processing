@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
         - name: email-pre-processing-service
-          image: "registry.ng.bluemix.net/irazabal/email-pre-processing-service:0.0.1"
+          image: "registry.ng.bluemix.net/${REPO_NAME}/email-pre-processing-service:0.0.1"
           imagePullPolicy: Always
           ports:
             - name: http
